@@ -8,6 +8,7 @@
 #define _SAFE_SNPRINTF_H_
 
 #include <sys/types.h>
+#include <stdarg.h>
 
 /**
   A (very) limited version of snprintf.
@@ -20,7 +21,14 @@
   Does not support any width/precision.
   Implemented with simplicity, and async-signal-safety in mind.
 */
-int safe_snprintf(char *to, size_t n, const char *fmt, ...);
+static int _safe_vsnprintf(char *to, size_t size, const char *format, va_list ap);
+int _safe_snprintf(char *to, size_t n, const char *fmt, ...);
+
+#define safe_vsnprintf(_s, _n, ...)       \
+    _safe_vsnprintf((char *)(_s), (size_t)(_n), __VA_ARGS__)
+
+#define safe_snprintf(_s, _n, _f, _a)     \
+    _safe_snprintf((char *)(_s), (size_t)(_n), _f, _a)
 
 #endif
 /* vim: set expandtab ts=4 sw=4 sts=4 tw=100: */

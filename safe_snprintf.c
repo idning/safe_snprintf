@@ -95,8 +95,8 @@ safe_check_longlong(const char *fmt, int32_t * have_longlong)
     return fmt;
 }
 
-static int
-safe_vsnprintf(char *to, size_t size, const char *format, va_list ap)
+int
+_safe_vsnprintf(char *to, size_t size, const char *format, va_list ap)
 {
     char *start = to;
     char *end = start + size - 1;
@@ -177,12 +177,12 @@ safe_vsnprintf(char *to, size_t size, const char *format, va_list ap)
 }
 
 int
-safe_snprintf(char *to, size_t n, const char *fmt, ...)
+_safe_snprintf(char *to, size_t n, const char *fmt, ...)
 {
     int result;
     va_list args;
     va_start(args, fmt);
-    result = safe_vsnprintf(to, n, fmt, args);
+    result = _safe_vsnprintf(to, n, fmt, args);
     va_end(args);
     return result;
 }
