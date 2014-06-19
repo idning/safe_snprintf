@@ -31,7 +31,7 @@ safe_itoa(int base, int64_t val, char *buf)
     const int32_t is_neg = (val < 0);
     *buf-- = 0;
 
-    if (is_neg){
+    if (is_neg) {
         val = -val;
     }
     if (is_neg && base == 16) {
@@ -45,7 +45,7 @@ safe_itoa(int base, int64_t val, char *buf)
         *buf-- = HEX[val % base];
     } while ((val /= base) != 0);
 
-    if (is_neg && base == 10){
+    if (is_neg && base == 10) {
         *buf-- = '-';
     }
 
@@ -53,6 +53,7 @@ safe_itoa(int base, int64_t val, char *buf)
         int ix;
         buf = orig_buf - 1;
         for (ix = 0; ix < 16; ++ix, --buf) {
+            /* *INDENT-OFF* */
             switch (*buf) {
             case '0': *buf = 'f'; break;
             case '1': *buf = 'e'; break;
@@ -71,6 +72,7 @@ safe_itoa(int base, int64_t val, char *buf)
             case 'e': *buf = '1'; break;
             case 'f': *buf = '0'; break;
             }
+            /* *INDENT-ON* */
         }
     }
     return buf + 1;
@@ -82,7 +84,7 @@ safe_check_longlong(const char *fmt, int32_t * have_longlong)
     *have_longlong = false;
     if (*fmt == 'l') {
         fmt++;
-        if (*fmt != 'l'){
+        if (*fmt != 'l') {
             *have_longlong = (sizeof(long) == sizeof(int64_t));
         } else {
             fmt++;
@@ -100,7 +102,7 @@ safe_vsnprintf(char *to, size_t size, const char *format, va_list ap)
     for (; *format; ++format) {
         int32_t have_longlong = false;
         if (*format != '%') {
-            if (to == end){      /* end of buffer */
+            if (to == end) {    /* end of buffer */
                 break;
             }
             *to++ = *format;    /* copy ordinary char */
@@ -122,13 +124,13 @@ safe_vsnprintf(char *to, size_t size, const char *format, va_list ap)
                 if (*format == 'p')
                     have_longlong = (sizeof(void *) == sizeof(uint64_t));
                 if (have_longlong) {
-                    if (*format == 'u'){
+                    if (*format == 'u') {
                         uval = va_arg(ap, uint64_t);
                     } else {
                         ival = va_arg(ap, int64_t);
                     }
                 } else {
-                    if (*format == 'u'){
+                    if (*format == 'u') {
                         uval = va_arg(ap, uint32_t);
                     } else {
                         ival = va_arg(ap, int32_t);
@@ -138,16 +140,19 @@ safe_vsnprintf(char *to, size_t size, const char *format, va_list ap)
                 {
                     char buff[22];
                     const int base = (*format == 'x' || *format == 'p') ? 16 : 10;
+
+		            /* *INDENT-OFF* */
                     char *val_as_str = (*format == 'u') ?
                         safe_utoa(base, uval, &buff[sizeof(buff) - 1]) :
                         safe_itoa(base, ival, &buff[sizeof(buff) - 1]);
+		            /* *INDENT-ON* */
 
                     /* Strip off "ffffffff" if we have 'x' format without 'll' */
-                    if (*format == 'x' && !have_longlong && ival < 0){
+                    if (*format == 'x' && !have_longlong && ival < 0) {
                         val_as_str += 8;
                     }
 
-                    while (*val_as_str && to < end){
+                    while (*val_as_str && to < end) {
                         *to++ = *val_as_str++;
                     }
                     continue;
@@ -156,10 +161,10 @@ safe_vsnprintf(char *to, size_t size, const char *format, va_list ap)
         case 's':
             {
                 const char *val = va_arg(ap, char *);
-                if (!val){
+                if (!val) {
                     val = "(null)";
                 }
-                while (*val && to < end){
+                while (*val && to < end) {
                     *to++ = *val++;
                 }
                 continue;
@@ -188,9 +193,10 @@ safe_snprintf(char *to, size_t n, const char *fmt, ...)
 #include "testhelp.h"
 
 void
-test_snprintf(size_t bufsize, const char *fmt, ...){
-    char * buf1 = calloc(bufsize, 1);
-    char * buf2 = calloc(bufsize, 1);
+test_snprintf(size_t bufsize, const char *fmt, ...)
+{
+    char *buf1 = calloc(bufsize, 1);
+    char *buf2 = calloc(bufsize, 1);
     int r1, r2;
     va_list args;
 
@@ -202,13 +208,12 @@ test_snprintf(size_t bufsize, const char *fmt, ...){
     r2 = snprintf(buf2, bufsize, fmt, args);
     va_end(args);
 
-    /*printf("r1 = %d, r2 = %d \n", r1, r2);*/
-    /*printf("b1 = %s, b2 = %s \n", buf1, buf2);*/
+    /*printf("r1 = %d, r2 = %d \n", r1, r2); */
+    /*printf("b1 = %s, b2 = %s \n", buf1, buf2); */
 
-    test_cond(fmt,
-            0 == memcmp(buf1, buf2, bufsize));
+    test_cond(fmt, 0 == memcmp(buf1, buf2, bufsize));
 
-    if(r2 < bufsize){
+    if (r2 < bufsize) {
         /*
          * If the output was truncated due to this limit
          * for snprintf:
@@ -216,8 +221,7 @@ test_snprintf(size_t bufsize, const char *fmt, ...){
          * for safe_snprintf:
          *      thre return value is bytes really written (n-1)
          * */
-        test_cond(fmt,
-                r1 == r2);
+        test_cond(fmt, r1 == r2);
     }
 
     free(buf1);
@@ -225,7 +229,8 @@ test_snprintf(size_t bufsize, const char *fmt, ...){
 }
 
 int
-main(void) {
+main(void)
+{
     int i;
 
     test_snprintf(10, "0");
@@ -249,7 +254,7 @@ main(void) {
     test_snprintf(i, "%p", &i);
     test_snprintf(i, "%p", NULL);
 
-    for(i = 0; i<22; i++){
+    for (i = 0; i < 22; i++) {
         test_snprintf(i, "%d", 0);
         test_snprintf(i, "%d", 1234567);
         test_snprintf(i, "%d", 12345678);
@@ -264,12 +269,12 @@ main(void) {
         test_snprintf(i, "%ld", 9223372036854775807L);
         test_snprintf(i, "%ld", 9223372036854775808UL);
         test_snprintf(i, "%ld", 18446744073709551615UL);
-        /*test_snprintf(i, "%ld", 18446744073709551616UL);*/
+        /*test_snprintf(i, "%ld", 18446744073709551616UL); */
 
         test_snprintf(i, "%lu", 9223372036854775807L);
         test_snprintf(i, "%lu", 9223372036854775808UL);
         test_snprintf(i, "%lu", 18446744073709551615UL);
-        /*test_snprintf(i, "%lu", 18446744073709551616UL);*/
+        /*test_snprintf(i, "%lu", 18446744073709551616UL); */
 
         test_snprintf(i, "%x", 0);
         test_snprintf(i, "%x", 1234567);
@@ -289,5 +294,3 @@ main(void) {
 }
 
 #endif
-
-
