@@ -15,8 +15,9 @@
 static const char HEX[] = "0123456789abcdef";
 
 static char *
-safe_utoa(uint32_t base, uint64_t val, char *buf)
+safe_utoa(int _base, uint64_t val, char *buf)
 {
+    uint32_t base = (uint32_t) _base;
     *buf-- = 0;
     do {
         *buf-- = HEX[val % base];
@@ -172,7 +173,7 @@ safe_vsnprintf(char *to, size_t size, const char *format, va_list ap)
         }
     }
     *to = 0;
-    return to - start;
+    return (size_t) (to - start);
 }
 
 size_t
@@ -192,12 +193,12 @@ safe_snprintf(char *to, size_t n, const char *fmt, ...)
 
 #include "testhelp.h"
 
-void
+static void
 test_snprintf(size_t bufsize, const char *fmt, ...)
 {
     char *buf1 = calloc(bufsize, 1);
     char *buf2 = calloc(bufsize, 1);
-    int r1, r2;
+    size_t r1, r2;
     va_list args;
 
     va_start(args, fmt);
@@ -205,7 +206,7 @@ test_snprintf(size_t bufsize, const char *fmt, ...)
     va_end(args);
 
     va_start(args, fmt);
-    r2 = snprintf(buf2, bufsize, fmt, args);
+    r2 = (size_t) snprintf(buf2, bufsize, fmt, args);
     va_end(args);
 
     /*printf("r1 = %d, r2 = %d \n", r1, r2); */
@@ -231,7 +232,7 @@ test_snprintf(size_t bufsize, const char *fmt, ...)
 int
 main(void)
 {
-    int i;
+    size_t i;
 
     test_snprintf(10, "0");
     test_snprintf(10, "01234567");
