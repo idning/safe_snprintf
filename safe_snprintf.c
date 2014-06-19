@@ -95,7 +95,7 @@ safe_check_longlong(const char *fmt, int32_t * have_longlong)
     return fmt;
 }
 
-static size_t
+static int
 safe_vsnprintf(char *to, size_t size, const char *format, va_list ap)
 {
     char *start = to;
@@ -173,13 +173,13 @@ safe_vsnprintf(char *to, size_t size, const char *format, va_list ap)
         }
     }
     *to = 0;
-    return (size_t) (to - start);
+    return (int)(to - start);
 }
 
-size_t
+int
 safe_snprintf(char *to, size_t n, const char *fmt, ...)
 {
-    size_t result;
+    int result;
     va_list args;
     va_start(args, fmt);
     result = safe_vsnprintf(to, n, fmt, args);
@@ -198,7 +198,7 @@ test_snprintf(size_t bufsize, const char *fmt, ...)
 {
     char *buf1 = calloc(bufsize, 1);
     char *buf2 = calloc(bufsize, 1);
-    size_t r1, r2;
+    int r1, r2;
     va_list args;
 
     va_start(args, fmt);
@@ -206,7 +206,7 @@ test_snprintf(size_t bufsize, const char *fmt, ...)
     va_end(args);
 
     va_start(args, fmt);
-    r2 = (size_t) snprintf(buf2, bufsize, fmt, args);
+    r2 = snprintf(buf2, bufsize, fmt, args);
     va_end(args);
 
     /*printf("r1 = %d, r2 = %d \n", r1, r2); */
@@ -214,7 +214,7 @@ test_snprintf(size_t bufsize, const char *fmt, ...)
 
     test_cond(fmt, 0 == memcmp(buf1, buf2, bufsize));
 
-    if (r2 < bufsize) {
+    if (r2 < (int)bufsize) {
         /*
          * If the output was truncated due to this limit
          * for snprintf:

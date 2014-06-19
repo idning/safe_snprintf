@@ -20,7 +20,7 @@
   Does not support any width/precision.
   Implemented with simplicity, and async-signal-safety in mind.
 */
-size_t safe_snprintf(char *to, size_t n, const char *fmt, ...);
+int safe_snprintf(char *to, size_t n, const char *fmt, ...);
 
 #endif
 /* vim: set expandtab ts=4 sw=4 sts=4 tw=100: */
